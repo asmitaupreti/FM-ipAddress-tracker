@@ -1,66 +1,66 @@
-import { useEffect, useState } from "react";
-import LeafletComponent from "./LeafletComponent";
-import arrow from "./assets/icon-arrow.svg";
-import bgDesktop from "./assets/pattern-bg-desktop.png";
+import { useEffect, useState } from 'react'
+import LeafletComponent from './LeafletComponent'
+import arrow from './assets/icon-arrow.svg'
+import bgDesktop from './assets/pattern-bg-desktop.png'
 
-const url = `http://localhost:8000/ipAdress`;
+const url = `/.netlify/functions/api/`
 
 function App() {
-  const [location, setLocation] = useState({});
-  const [search, setSearch] = useState("");
+  const [location, setLocation] = useState({})
+  const [search, setSearch] = useState('')
 
   function validIpAddress(ip) {
-    const parts = ip.split(/[.:]/);
+    const parts = ip.split(/[.:]/)
 
     if (parts.length === 4) {
       // Check IPv4 parts
       for (const part of parts) {
-        const num = parseInt(part);
+        const num = parseInt(part)
         if (isNaN(num) || num < 0 || num > 255) {
-          return false;
+          return false
         }
       }
-      return true;
+      return true
     } else if (parts.length === 8) {
       // Check IPv6 parts
       for (const part of parts) {
         if (!/^[0-9a-fA-F]{1,4}$/.test(part)) {
-          return false;
+          return false
         }
       }
-      return true;
+      return true
     }
-    return false;
+    return false
   }
 
   const prepareData = (searchInput) => {
     if (searchInput) {
       validIpAddress(searchInput) == true
         ? fetchData({ ipAddress: searchInput })
-        : fetchData({ domain: searchInput });
+        : fetchData({ domain: searchInput })
     }
-  };
+  }
 
   const fetchData = async (queryParams) => {
     try {
-      let updatedUrl = url;
+      let updatedUrl = url
 
       if (queryParams) {
-        updatedUrl += "?" + new URLSearchParams(queryParams);
+        updatedUrl += '?' + new URLSearchParams(queryParams)
       }
 
-      const response = await fetch(updatedUrl);
-      const data = await response.json();
+      const response = await fetch(updatedUrl)
+      const data = await response.json()
 
-      setLocation(data);
-      setSearch("");
+      setLocation(data)
+      setSearch('')
     } catch (error) {
-      console.error("Error fetching location data:", error);
+      console.error('Error fetching location data:', error)
     }
-  };
+  }
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
   return (
     <div className=" max-h-screen  ">
       {/* Image container */}
@@ -84,7 +84,7 @@ function App() {
             <div
               className=" bg-black rounded-r-2xl p-6"
               onClick={() => {
-                prepareData(search);
+                prepareData(search)
               }}
             >
               <img src={arrow} />
@@ -102,7 +102,7 @@ function App() {
                 IP ADDRESS
               </p>
               <p className="text-black text-md font-rubik font-semibold text-center">
-                {location?.ip || ""}
+                {location?.ip || ''}
               </p>
             </div>
 
@@ -112,9 +112,9 @@ function App() {
                 LOCATION
               </p>
               <p className="text-black text-md font-rubik font-semibold text-center  ">
-                {location?.location?.city || ""},
-                {location?.location?.region || ""} <br />
-                {location?.location?.postalCode || ""}
+                {location?.location?.city || ''},
+                {location?.location?.region || ''} <br />
+                {location?.location?.postalCode || ''}
               </p>
             </div>
 
@@ -124,7 +124,7 @@ function App() {
                 TIMEZONE
               </p>
               <p className="text-black text-md font-rubik font-semibold text-center">
-                {`UTC ${location?.location?.timezone || ""}`}
+                {`UTC ${location?.location?.timezone || ''}`}
               </p>
             </div>
 
@@ -134,7 +134,7 @@ function App() {
                 ISP
               </p>
               <p className="text-black text-md font-rubik font-semibold text-center">
-                {location?.isp || ""}
+                {location?.isp || ''}
               </p>
             </div>
           </div>
@@ -146,7 +146,7 @@ function App() {
       {/* leaflet  container */}
       <LeafletComponent data={location} />
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
