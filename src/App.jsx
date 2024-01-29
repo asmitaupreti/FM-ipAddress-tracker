@@ -1,62 +1,66 @@
-import { useEffect, useState } from 'react'
-import LeafletComponent from './LeafletComponent'
-import arrow from './assets/icon-arrow.svg'
-import bgDesktop from './assets/pattern-bg-desktop.png'
+import { useEffect, useState } from "react";
+import LeafletComponent from "./LeafletComponent";
+import arrow from "./assets/icon-arrow.svg";
+import bgDesktop from "./assets/pattern-bg-desktop.png";
 
-const apiKey = import.meta.env.VITE_KEY
-const url = `https://geo.ipify.org/api/v2/country,city?apiKey=${apiKey}`
+const url = `http://localhost:8000/ipAdress`;
 
 function App() {
-  const [location, setLocation] = useState({})
-  const [search, setSearch] = useState('')
+  const [location, setLocation] = useState({});
+  const [search, setSearch] = useState("");
 
   function validIpAddress(ip) {
-    const parts = ip.split(/[.:]/)
+    const parts = ip.split(/[.:]/);
 
     if (parts.length === 4) {
       // Check IPv4 parts
       for (const part of parts) {
-        const num = parseInt(part)
+        const num = parseInt(part);
         if (isNaN(num) || num < 0 || num > 255) {
-          return false
+          return false;
         }
       }
-      return true
+      return true;
     } else if (parts.length === 8) {
       // Check IPv6 parts
       for (const part of parts) {
         if (!/^[0-9a-fA-F]{1,4}$/.test(part)) {
-          return false
+          return false;
         }
       }
-      return true
+      return true;
     }
-    return false
+    return false;
   }
 
-  const fetchData = async (ipAddress) => {
+  const prepareData = (searchInput) => {
+    if (searchInput) {
+      validIpAddress(searchInput) == true
+        ? fetchData({ ipAddress: searchInput })
+        : fetchData({ domain: searchInput });
+    }
+  };
+
+  const fetchData = async (queryParams) => {
     try {
-      let updatedUrl = ''
-      if (ipAddress && validIpAddress(ipAddress)) {
-        updatedUrl = url + '&ipAddress=' + ipAddress
-        console.log(updatedUrl)
-      } else if (ipAddress) {
-        updatedUrl = url + '&domain=' + ipAddress
-      } else {
-        updatedUrl = url
+      let updatedUrl = url;
+
+      if (queryParams) {
+        updatedUrl += "?" + new URLSearchParams(queryParams);
       }
-      const response = await fetch(updatedUrl)
-      const data = await response.json()
 
-      setLocation(data)
+      const response = await fetch(updatedUrl);
+      const data = await response.json();
+
+      setLocation(data);
+      setSearch("");
     } catch (error) {
-      console.error('Error fetching location data:', error)
+      console.error("Error fetching location data:", error);
     }
-  }
-
+  };
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
   return (
     <div className=" max-h-screen  ">
       {/* Image container */}
@@ -80,14 +84,14 @@ function App() {
             <div
               className=" bg-black rounded-r-2xl p-6"
               onClick={() => {
-                fetchData(search)
+                prepareData(search);
               }}
             >
               <img src={arrow} />
             </div>
           </div>
         </div>
-        <div className=" bg-transparent w-full flex justify-center absolute bottom-[-53%] md:bottom-5 z-20  ">
+        <div className=" bg-transparent w-full flex justify-center absolute bottom-[-53%] md:bottom-0 z-20  ">
           <div
             className=" flex flex-col md:flex-row bg-white w-[25rem] md:w-[50rem] 
         items-center p-8   space-y-5 space-x-0 md:space-y-0 md:space-x-9 justify-evenly
@@ -98,7 +102,7 @@ function App() {
                 IP ADDRESS
               </p>
               <p className="text-black text-md font-rubik font-semibold text-center">
-                {location?.ip || ''}
+                {location?.ip || ""}
               </p>
             </div>
 
@@ -107,10 +111,10 @@ function App() {
               <p className="text-gray-400 text-xs font-rubik font-bold text-center">
                 LOCATION
               </p>
-              <p className="text-black text-md font-rubik font-semibold text-center flex flex-col ">
-                {location?.location?.city || ''},
-                {location?.location?.region || ''} <br />
-                {location?.location?.postalCode || ''}
+              <p className="text-black text-md font-rubik font-semibold text-center  ">
+                {location?.location?.city || ""},
+                {location?.location?.region || ""} <br />
+                {location?.location?.postalCode || ""}
               </p>
             </div>
 
@@ -120,7 +124,7 @@ function App() {
                 TIMEZONE
               </p>
               <p className="text-black text-md font-rubik font-semibold text-center">
-                {`UTC ${location?.location?.timezone || ''}`}
+                {`UTC ${location?.location?.timezone || ""}`}
               </p>
             </div>
 
@@ -130,7 +134,7 @@ function App() {
                 ISP
               </p>
               <p className="text-black text-md font-rubik font-semibold text-center">
-                {location?.isp || ''}
+                {location?.isp || ""}
               </p>
             </div>
           </div>
@@ -142,7 +146,7 @@ function App() {
       {/* leaflet  container */}
       <LeafletComponent data={location} />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
