@@ -2,7 +2,6 @@
 import express, { Router } from 'express'
 import cors from 'cors'
 import 'dotenv/config'
-import fetch from 'node-fetch'
 import serverless from 'serverless-http'
 
 const api = express()
@@ -10,7 +9,7 @@ const router = Router()
 api.use(cors())
 
 const PORT = 8000
-const apiKey = process.env.API_KEY
+const apiKey = process.env.VITE_API_KEY
 console.log(apiKey, 'API_KEY')
 
 router.get('/', async (req, res) => {
