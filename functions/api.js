@@ -14,11 +14,22 @@ console.log(apiKey, 'API_KEY')
 
 router.get('/', async (req, res) => {
   const query = new URLSearchParams(req.query)
-  const response = await fetch(
-    `https://geo.ipify.org/api/v2/country,city?apiKey=${apiKey}&${query}`
-  )
-  const data = await response.json()
-  res.json(data)
+  try {
+    const response = await fetch(
+      `https://geo.ipify.org/api/v2/country,city?apiKey=${apiKey}&${query}`
+    )
+    const data = await response.json()
+    console.log(data)
+    if (response.status == 200) {
+      res.json(data)
+    } else {
+      res.statusCode = response.status
+      res.json(data)
+    }
+  } catch (error) {
+    res.statusCode = 500
+    res.json({ code: 500, message: error })
+  }
 })
 
 api.use('/.netlify/functions/api', router)

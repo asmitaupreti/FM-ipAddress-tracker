@@ -1,3 +1,8 @@
+[dev]
+# Specifies the port that the local development server is running on.
+targetPort = 3000
+# Optional: Set the port Netlify Dev will run on
+port = 8888
 [build]
   functions = "functions"
 [functions]

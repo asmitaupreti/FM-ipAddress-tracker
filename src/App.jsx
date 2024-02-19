@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react'
-import LeafletComponent from './LeafletComponent'
+import { useCallback, useEffect, useState } from 'react'
+import { LeafletComponent, Popup } from './components'
 import arrow from './assets/icon-arrow.svg'
 import bgDesktop from './assets/pattern-bg-desktop.png'
+import { data } from 'autoprefixer'
 
 const url = `/.netlify/functions/api/`
 
 function App() {
   const [location, setLocation] = useState({})
   const [search, setSearch] = useState('')
+  const [error, setError] = useState('')
+  const [showPopup, setShowPopup] = useState(false)
 
   function validIpAddress(ip) {
     const parts = ip.split(/[.:]/)
@@ -41,6 +44,9 @@ function App() {
     }
   }
 
+  const displayPopup = useCallback(() => {
+    setShowPopup(!showPopup)
+  })
   const fetchData = async (queryParams) => {
     try {
       let updatedUrl = url
@@ -50,19 +56,24 @@ function App() {
       }
 
       const response = await fetch(updatedUrl)
-      const data = await response.json()
 
+      const data = await response.json()
+      console.log(data)
+      if (response.status !== 200)
+        throw new Error(data?.messages || 'Unknown error occurred')
       setLocation(data)
       setSearch('')
     } catch (error) {
-      console.error('Error fetching location data:', error)
+      setShowPopup(true)
+      setError(error.message)
+      console.error('Error fetching location data:', error.message)
     }
   }
   useEffect(() => {
     fetchData()
   }, [])
   return (
-    <div className=" max-h-screen  ">
+    <div className="h-screen  ">
       {/* Image container */}
       <div className=" bg-pattern-mobile  h-[380px] md:bg-pattern-desktop md:h-[400px]   relative  ">
         <img className="w-full h-full" src={bgDesktop} alt="Hero Image"></img>
@@ -81,14 +92,15 @@ function App() {
                 className="bg-transparent outline-none text-lg font-rubik w-full p-2"
               />
             </div>
-            <div
+            <button
+              role="button"
               className=" bg-black rounded-r-2xl p-6"
               onClick={() => {
                 prepareData(search)
               }}
             >
               <img src={arrow} />
-            </div>
+            </button>
           </div>
         </div>
         <div className=" bg-transparent w-full flex justify-center absolute bottom-[-53%] md:bottom-0 z-20  ">
@@ -112,7 +124,7 @@ function App() {
                 LOCATION
               </p>
               <p className="text-black text-md font-rubik font-semibold text-center  ">
-                {location?.location?.city || ''},
+                {location?.location?.city ? location.location.city + ',' : ''}
                 {location?.location?.region || ''} <br />
                 {location?.location?.postalCode || ''}
               </p>
@@ -145,6 +157,7 @@ function App() {
 
       {/* leaflet  container */}
       <LeafletComponent data={location} />
+      {showPopup && <Popup message={error} displayPopup={displayPopup} />}
     </div>
   )
 }
