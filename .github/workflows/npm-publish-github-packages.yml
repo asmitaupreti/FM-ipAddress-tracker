@@ -34,14 +34,31 @@ jobs:
         time: '30s' # Adjust this based on your observation of how long Netlify Dev takes to initialize
 
     - name: Run Cypress Tests
-      uses: cypress-io/github-action@v2
-      with:
+      - uses: actions/checkout@v4
+         with:
         browser: chrome
         headless: true
         command: npm run cy:run-e2e
         start: echo "Netlify Dev already started"
         wait-on: 'http://localhost:8888'
         wait-on-timeout: 60 # Adjust if necessary
+      - uses: cypress-io/github-action@v6
+      # after the test run completes store videos and any screenshots
+      - uses: actions/upload-artifact@v4
+        # add the line below to store screenshots only on failures
+        # if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore # 'warn' or 'error' are also available, defaults to `warn`
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos
+          path: cypress/videos
+          if-no-files-found: ignore # 'warn' or 'error' are also available, defaults to `warn`
+      
+
+
 
   deploy:
     needs: test
