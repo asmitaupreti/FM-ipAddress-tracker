@@ -1,0 +1,66 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14' # Ensure this matches your project's Node.js version
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Install Netlify CLI
+      run: npm install -g netlify-cli
+
+    - name: Start Netlify Dev
+      run: netlify dev &
+      env:
+        CI: true
+
+    - name: Wait for Netlify Dev to be ready
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '30s' # Adjust this based on your observation of how long Netlify Dev takes to initialize
+
+    - name: Run Cypress Tests
+      uses: cypress-io/github-action@v2
+      with:
+        command: npm run cy:open-e2e
+        start: echo "Netlify Dev already started"
+        wait-on: 'http://localhost:8888'
+        wait-on-timeout: 60 # Adjust if necessary
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Build
+      run: npm run build
+
+    - name: Deploy to Netlify using Netlify CLI
+      run: netlify deploy --prod --dir=dist --functions=functions
+      env:
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
