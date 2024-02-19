@@ -37,8 +37,6 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           browser: chrome
-          headless: true
-          command: npm run cy:run-e2e
           start: echo "Netlify Dev already started"
           wait-on: 'http://localhost:8888'
           wait-on-timeout: 60 # Adjust if necessary
