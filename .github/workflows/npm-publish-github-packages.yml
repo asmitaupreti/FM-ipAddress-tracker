@@ -38,7 +38,6 @@ jobs:
         with:
          browser: chrome
          start: echo "Netlify Dev already started"
-         wait-on: 'http://localhost:8888'
          wait-on-timeout: 60 # Adjust if necessary
       # after the test run completes
       # store videos and any screenshots
