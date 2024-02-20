@@ -49,19 +49,28 @@ jobs:
   deploy-to-netlify:
     # needs: test # This job runs only if build-and-test succeeds
     runs-on: ubuntu-latest
+    environment: Netlify
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18'
+          node-version: '18' # Make sure this matches the version used in the build-and-test job
+
+      - name: Install Dependencies
+        run: npm ci
 
       - name: Build for Production
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: |
-          npm ci
-          npm run build
-          npx netlify deploy --dir=./dist --prod
+        run: npm run build # Rebuild the site for production before deploying
+
+      - name: Netlify Deploy
+        uses: nwtgck/actions-netlify@v2.0
+
+        with:
+          publish-dir: './dist' # Adjust based on your build output directory
+          production-deploy: true
+          github-token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
+          deploy-message: 'Deploying to Netlify'
+          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
