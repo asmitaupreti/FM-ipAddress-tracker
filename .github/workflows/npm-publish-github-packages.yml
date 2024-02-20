@@ -72,5 +72,6 @@ jobs:
           production-deploy: true
           github-token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
           deploy-message: 'Deploying to Netlify'
-          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
