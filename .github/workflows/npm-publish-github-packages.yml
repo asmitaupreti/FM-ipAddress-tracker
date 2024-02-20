@@ -47,7 +47,7 @@ jobs:
           path: cypress/videos
 
   deploy-to-netlify:
-    # needs: test # This job runs only if build-and-test succeeds
+    needs: test # This job runs only if build-and-test succeeds
     runs-on: ubuntu-latest
     environment: Netlify
     steps:
