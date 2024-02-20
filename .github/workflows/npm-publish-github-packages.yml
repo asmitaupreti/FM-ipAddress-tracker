@@ -1,0 +1,83 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18' # Ensure this matches your project's Node.js version
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Start Netlify Dev
+        run: netlify dev &
+        env:
+          CI: true
+
+      - name: Wait for Netlify Dev to be ready
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s' # Adjust this based on your observation of how long Netlify Dev takes to initialize
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+         browser: chrome
+         start: echo "Netlify Dev already started"
+         wait-on-timeout: 60 # Adjust if necessary
+      # after the test run completes
+      # store videos and any screenshots
+      # NOTE: screenshots will be generated only if E2E test failed
+      # thus we store screenshots only on failures
+      # Alternative: create and commit an empty cypress/screenshots folder
+      # to always have something to upload
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+      # Test run video was always captured, so this action uses "always()" condition
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos
+       
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Netlify using Netlify CLI
+        run: netlify deploy --prod --dir=dist --functions=functions
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
