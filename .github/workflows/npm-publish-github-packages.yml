@@ -18,27 +18,16 @@ jobs:
           node-version: '18' # Ensure this matches your project's Node.js version
 
       - name: Install Dependencies
-        run: npm install
-
-      - name: Install Netlify CLI
-        run: npm install -g netlify-cli
-
-      - name: Start Netlify Dev
-        run: netlify dev &
-        env:
-          CI: true
-
-      - name: Wait for Netlify Dev to be ready
-        uses: jakejarvis/wait-action@master
-        with:
-          time: '30s' # Adjust this based on your observation of how long Netlify Dev takes to initialize
+        run: npm ci
+      # Adjust this based on your observation of how long Netlify Dev takes to initialize
 
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
-         browser: chrome
-         start: echo "Netlify Dev already started"
-         wait-on-timeout: 60 # Adjust if necessary
+          browser: chrome
+          start: npx netlify dev
+          wait-on: 'http://localhost:8888'
+          wait-on-timeout: 60 # Adjust if necessary
       # after the test run completes
       # store videos and any screenshots
       # NOTE: screenshots will be generated only if E2E test failed
@@ -56,28 +45,3 @@ jobs:
         with:
           name: cypress-videos
           path: cypress/videos
-       
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
-
-      - name: Deploy to Netlify using Netlify CLI
-        run: netlify deploy --prod --dir=dist --functions=functions
-        env:
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
