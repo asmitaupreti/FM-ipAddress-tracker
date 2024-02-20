@@ -65,14 +65,7 @@ jobs:
         run: npm run build # Rebuild the site for production before deploying
 
       - name: Netlify Deploy
-        uses: nwtgck/actions-netlify@v2.0
-
-        with:
-          publish-dir: './dist' # Adjust based on your build output directory
-          production-deploy: true
-          github-token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
-          deploy-message: 'Deploying to Netlify'
-          functions-dir: './functions'
+        run: npx netlify deploy --dir=./dist --prod --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --site ${{ secrets.NETLIFY_SITE_ID }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
